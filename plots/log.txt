@@ -1,0 +1,12 @@
+exp-dust.png
+exp(z) - z*z + c
+c == -0.25 + 0.2 i
+
+sin-double.png
+sin(z) + c
+z == 0.0 + 0.0 i
+
+sin-double-2.png
+sin(z) + c
+z == 0.5 + 1.2 i
+
