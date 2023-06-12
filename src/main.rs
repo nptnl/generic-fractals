@@ -6,9 +6,10 @@ use std::path::Path;
 static HEX_GS: [char; 16] = ['0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f',];
 
 fn main() {
-    pspace(Comp::new(0.0, 0.0), 128, 2.0, 8);
+    ispace(Comp::new(0.905, 0.45), 8192, 2.0, 128);
 }
 
+#[allow(dead_code)]
 fn ispace(c: Comp, size: u32, planesize: f64, iterate: usize) {
 
     let path = Path::new("./plots/current.npxl");
@@ -16,7 +17,7 @@ fn ispace(c: Comp, size: u32, planesize: f64, iterate: usize) {
     let first = format!("{} {}\n", size*2, size*2) + "16 1\n";
     file.write_all(first.as_bytes()).expect("cannot write header");
     
-    let formula = |z: Comp| exp(z*z) + ln(z) - z*z + c;
+    let formula = |z: Comp, c: Comp| z*z*z*z*z*z + c;
 
     let step: f64 = planesize / size as f64;
     let mut crnt: Comp = Comp::new(-planesize + 0.5*step, planesize - 0.5*step);
@@ -33,7 +34,7 @@ fn ispace(c: Comp, size: u32, planesize: f64, iterate: usize) {
             loop {
                 if counter == iterate { counter = 0; break }
                 if z.r*z.r + z.i*z.i > planesize * planesize { break }
-                z = formula(z);
+                z = formula(z, c);
                 counter += 1;
             }
             valstring = format!("{valstring}{}", HEX_GS[counter * 16 / iterate]);
@@ -46,6 +47,7 @@ fn ispace(c: Comp, size: u32, planesize: f64, iterate: usize) {
 
 }
 
+#[allow(dead_code)]
 fn pspace(seed: Comp, size: u32, planesize: f64, iterate: usize) {
 
     let path = Path::new("./plots/current.npxl");
@@ -53,7 +55,7 @@ fn pspace(seed: Comp, size: u32, planesize: f64, iterate: usize) {
     let first = format!("{} {}\n", size*2, size*2) + "16 1\n";
     file.write_all(first.as_bytes()).expect("cannot write header");
 
-    let formula = | z: Comp, c: Comp | z.inv() + c;
+    let formula = |z: Comp, c: Comp| sin(z*z) + c;
 
     let step: f64 = planesize / size as f64;
     let mut crnt: Comp = Comp::new(-planesize + 0.5*step, planesize - 0.5*step);

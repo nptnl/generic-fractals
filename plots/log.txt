@@ -10,3 +10,11 @@ sin-double-2.png
 sin(z) + c
 z == 0.5 + 1.2 i
 
+nptnl/nptnl/
+sin-sq-par.png
+sin(z*z) + c
+z == 0.0 + 0.0 i
+
+hex-dust.png
+z*z*z*z*z*z + c
+c == 0.905 + 0.450 i
