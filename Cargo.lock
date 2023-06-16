@@ -5,10 +5,12 @@ version = 3
 [[package]]
 name = "basemath"
 version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "15a9d2bb438e572ddac07e71e0b5c63b5868e6b6f6850bab8104745db48e18d8"
 
 [[package]]
 name = "generic-fractals"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "basemath",
 ]
