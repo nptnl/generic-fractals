@@ -31,6 +31,10 @@ fn multi_i(
     iterate: usize,
     threads: u32,
 ) {
+    let mut header = File::create("./plots/build/0.npxl").expect("cannot create cur file");
+    let first = format!("{} {}\n", width, height) + "16 1\n";
+    header.write_all(first.as_bytes()).expect("cannot write header");
+
     let separation: f64 = (topleft.i - bottomright.i) * 0.125;
     let mut loc_tl: Comp = topleft;
     let mut loc_br: Comp = Comp { r: bottomright.r, i: topleft.i - separation};
@@ -38,18 +42,6 @@ fn multi_i(
         ispace(par, loc_tl, loc_br, bound, width, height / threads, iterate, parallel as usize);
         loc_tl.i -= separation;
         loc_br.i -= separation;
-    }
-}
-
-fn combine_npxl(count: usize, width: u32, height: u32) {
-    let path = Path::new("./plots/cur.npxl");
-    let mut file = File::create(&path).unwrap();
-    let first = format!("{} {}\n", width, height) + "16 1\n";
-    file.write_all(first.as_bytes()).expect("cannot write header");
-
-    let mut name: String = String::new();
-    for num in 1..count+1 {
-        name = format!("./plots/build/{num}.npxlb");
     }
 }
 
@@ -65,7 +57,7 @@ fn ispace(
     num: usize
 ) {
 
-    let name: String = format!("./plots/build/{num}.npxlb");
+    let name: String = format!("./plots/build/{num}.npxl");
     let path = Path::new(name.as_str());
     let mut file = File::create(&path).unwrap();
     
