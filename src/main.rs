@@ -7,15 +7,14 @@ use std::thread;
 static HEX_GS: [char; 16] = ['0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f',];
 
 fn main() {
-    let par: Comp = Comp { r: 0.0, i: 0.0 };
-    let topleft: Comp = Comp { r: -1.5, i: 1.4 };
-    let bottomright: Comp = Comp { r: 3.0, i: -0.4 };
+    let par: Comp = Comp { r: -0.5, i: 0.0 };
+    let topleft: Comp = Comp { r: -2.0, i: 2.0 };
+    let bottomright: Comp = Comp { r: 2.0, i: -2.0 };
     let bound: f64 = 2.0;
     let bound = bound * bound;
-    let width: u32 = 1024;
-    let height: u32 = 1024;
-    let iterate: usize = 16;
-    let num: usize = 1;
+    let width: u32 = 16384;
+    let height: u32 = 16384;
+    let iterate: usize = 128;
     let threads: u32 = 8;
 
     multi_i(par, topleft, bottomright, bound, width, height, iterate, threads);
@@ -38,10 +37,16 @@ fn multi_i(
     let separation: f64 = (topleft.i - bottomright.i) * 0.125;
     let mut loc_tl: Comp = topleft;
     let mut loc_br: Comp = Comp { r: bottomright.r, i: topleft.i - separation};
+    let mut allthr: Vec<_> = Vec::new();
     for parallel in 1..threads+1 {
-        ispace(par, loc_tl, loc_br, bound, width, height / threads, iterate, parallel as usize);
+        allthr.push( thread::spawn(move || {
+            ispace(par, loc_tl, loc_br, bound, width, height / threads, iterate, parallel as usize);
+        }) );
         loc_tl.i -= separation;
         loc_br.i -= separation;
+    }
+    for each in allthr {
+        each.join().unwrap();
     }
 }
 
@@ -56,7 +61,6 @@ fn ispace(
     iterate: usize,
     num: usize
 ) {
-
     let name: String = format!("./plots/build/{num}.npxl");
     let path = Path::new(name.as_str());
     let mut file = File::create(&path).unwrap();
