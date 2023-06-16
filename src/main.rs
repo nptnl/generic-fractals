@@ -9,28 +9,34 @@ static HEX_GS: [char; 16] = [
     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f',
 ];
 
+// Change me to override thread settings
+static ADVANCED_MODE: bool = false;
+
 fn main() {
     let _ = create_dir_all("./plots/build");
     let seed: Comp = Comp { r: 0.0, i: 0.0 };
     let topleft: Comp = Comp { r: -2.0, i: 2.0 };
     let bottomright: Comp = Comp { r: 2.0, i: -2.0 };
     let bound: f64 = 2.0;
-    let width: u32 = 1240;
-    let height: u32 = 1240;
+    let width: u32 = 16384;
+    let height: u32 = 16384;
     let iterate: usize = 128;
     let parallelism = thread::available_parallelism();
-    let default_threads: u32 = 2;
 
-    let threads: u32 = match parallelism {
-        Ok(res) => res.get().try_into().unwrap(),
-        Err(error) => {
-            println!(
-                "Thread calculation failed. Using {} threads. {}",
-                default_threads, error
-            );
-            2
-        }
-    };
+    let mut threads: u32 = 2;
+
+    if !ADVANCED_MODE {
+        threads = match parallelism {
+            Ok(res) => res.get().try_into().unwrap(),
+            Err(error) => {
+                println!(
+                    "Thread calculation failed. Using {} threads. {}",
+                    threads, error
+                );
+                2
+            }
+        };
+    }
 
     multi_p(
         seed,
