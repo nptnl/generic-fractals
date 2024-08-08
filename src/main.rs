@@ -14,16 +14,39 @@ static LOWER_GS: [char; 32] = [
 ];
 
 fn main() {
-    let seed: Comp = Comp { r: -0.0, i: 0.0 };
-    let topleft: Comp = Comp { r: -8.0, i: 8.0 };
-    let bottomright: Comp = Comp { r: 8.0, i: -8.0 };
-    let bound: f64 = 20.0;
-    let width: u32 = 512;
-    let height: u32 = 512;
-    let iterate: usize = 32;
-    let threads: u32 = 8;
+    let seed: Comp = Comp { r: -0.5, i: 0.0 };
+    let topleft: Comp = Comp { r: -0.2, i: 0.7 };
+    let bottomright: Comp = Comp { r: 0.2, i: 0.4 };
+    let bound: f64 = 2.0;
+    let width: u32 = 400;
+    let height: u32 = 200;
+    let iterate: usize = 16;
+    let threads: u32 = 1;
+    let duration: usize = 8;
 
-    multi_p(seed, topleft, bottomright, bound, width, height, iterate, threads);
+    video_i(seed, bound, width, height, iterate, duration);
+}
+
+fn video_i(
+    par: Comp,
+    bound: f64,
+    width: u32,
+    height: u32,
+    iterate: usize,
+    duration: usize,
+) {
+    let mut time: usize = 0;
+    let mut topleft: Comp = Comp { r: -1.2, i: 0.7 };
+    let mut bottomright: Comp = Comp { r: 1.2, i: -0.7 };
+
+    let time_function = |t: usize| 0.1 * t as f64;
+    
+    while time < duration {
+        ispace(par, topleft, bottomright, bound, width, height, iterate, time, true);
+        time += 1;
+        topleft += time_function(time);
+        bottomright += time_function(time);
+    }
 }
 
 #[allow(dead_code)]
@@ -47,7 +70,7 @@ fn multi_i(
     let mut allthr: Vec<_> = Vec::new();
     for parallel in 1..threads+1 {
         allthr.push( thread::spawn(move || {
-            ispace(par, loc_tl, loc_br, bound, width, height / threads, iterate, parallel as usize);
+            ispace(par, loc_tl, loc_br, bound, width, height / threads, iterate, parallel as usize, false);
         }) );
         loc_tl.i -= separation;
         loc_br.i -= separation;
@@ -77,7 +100,7 @@ fn multi_p(
     let mut allthr: Vec<_> = Vec::new();
     for parallel in 1..threads+1 {
         allthr.push( thread::spawn(move || {
-            pspace(seed, loc_tl, loc_br, bound, width, height / threads, iterate, parallel as usize);
+            pspace(seed, loc_tl, loc_br, bound, width, height / threads, iterate, parallel as usize, false);
         }) );
         loc_tl.i -= separation;
         loc_br.i -= separation;
@@ -96,13 +119,19 @@ fn ispace(
     width: u32,
     height: u32,
     iterate: usize,
-    num: usize
+    num: usize,
+    header: bool,
 ) {
     let name: String = format!("./plots/build/{num}.npxl");
     let path = Path::new(name.as_str());
     let mut file = File::create(&path).unwrap();
+
+    if header {
+        let first = format!("{} {}\n", width, height) + "32 1\n";
+        file.write_all(first.as_bytes()).expect("cannot write header");
+    };
     
-    let formula = |z: Comp, c: Comp| tanh(z) + c;
+    let formula = |z: Comp, c: Comp| z*z + c;
 
     let rstep: f64 = (bottomright.r - topleft.r) / width as f64;
     let istep: f64 = (topleft.i - bottomright.i) / height as f64;
@@ -141,11 +170,17 @@ fn pspace(
     height: u32,
     iterate: usize,
     num: usize,
+    header: bool,
 ) {
 
     let name: String = format!("./plots/build/{num}.npxl");
     let path = Path::new(name.as_str());
     let mut file = File::create(&path).unwrap();
+
+    if header {
+        let first = format!("{} {}\n", width, height) + "32 1\n";
+        file.write_all(first.as_bytes()).expect("cannot write header");
+    };
     
     let formula = |z: Comp, c: Comp| sin(z) + z*z*z + c;
     
